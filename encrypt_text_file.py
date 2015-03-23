@@ -4,6 +4,7 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
 
 #Encrypt the file (plaintext) using AES
 file_name = input('Enter filename: ')
@@ -24,7 +25,7 @@ random_generator = Random.new().read
 RSA_key = RSA.generate(1024, random_generator)
 public_key = RSA_key.publickey()
 enc_AES_key = public_key.encrypt(AES_key_int, 32)
-
+print(enc_AES_key[0])
 
 #Decrypting from RSA key to symmetric key (AES_key) to plaintext message.
 decrypted_AES_key_int = RSA_key.decrypt(enc_AES_key)
@@ -32,3 +33,11 @@ decrypted_AES_key = decrypted_AES_key_int.to_bytes(16, 'little')
 
 #Must use substring in order to get rid of the iv. IV is necessary for MODE_CFB.
 print(AES_cipher.decrypt(msg)[AES.block_size:])
+
+#Digital Signature
+signer = PKCS1_v1_5.new(RSA_key)
+h = SHA256.new(str(enc_AES_key[0]).encode('latin-1'))
+signature = signer.sign(h)
+print(signature)
+
+#Verify Digital Signature
